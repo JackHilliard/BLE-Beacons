@@ -20,10 +20,18 @@ import sys
 import os
 import time
 import subprocess
-from datetime import datetime
+import requests
+import arrow
 
-# constant
-zoneLimit = -90
+# zone limit and sizes
+# -20 to -30 at beacon
+# -50 ~1m away
+# -65 ~3 metres away
+# very dependant on devices nearby and elevation compared to RPi
+zoneLimit = -65
+
+#URL definition
+url = 'http://192.168.1.242:3000'
 
 #decode rssi
 def twos_comp(val, bits):
@@ -31,6 +39,14 @@ def twos_comp(val, bits):
         val = val - (1 << bits)
     return val
 
+def sendToServer(payload):
+    r=requests.post(+ '/sensordata',
+                    headers={'Content-Type': 'application/json'},
+                    json={payload})
+
+    if r.status_code == 200:
+        print(r.content)
+        
 """
 This class uses hctool and hcidump to parse BLE adv data.
 """
@@ -115,6 +131,9 @@ def main():
                                     countRssi+=1
                                     break
                 if (countRssi == 0):
+                    if(zoneOne==True):
+                        print("Beacon", deviceId, "is now out of range")
+                        print(sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())}))
                     zoneOne = False
                     print("Beacon", deviceId, "cannot be found")
                 else:
@@ -124,9 +143,11 @@ def main():
                         zoneOne=True
                         print("Beacon", deviceId, "is in range")
                         print("RSSI :", avgRssi)
+                        print(sendToServer({'beacon': deviceId, 'zone': 'one', 'timestamp': str(arrow.utcnow())}))
                     elif ((avgRssi < zoneLimit) and (zoneOne == True)):
                         zoneOne = False
                         print("Beacon", deviceId, "is now out of range")
+                        print(sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())}))
         except KeyboardInterrupt as ex:
             print("kbi")
             scanner.stop()
