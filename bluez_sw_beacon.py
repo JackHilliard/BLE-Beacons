@@ -88,15 +88,16 @@ def main():
     scanner = BLEScanner()
     scanner.start()
 
+    zoneOne = False
     data = None
     while True:
         try:
-            currentTime = datetime.utcnow()
-            if ((currentTime.second % 10) == 0):
+            currentTime = time.time()
+            if ((round(currentTime) % 10) == 0):
                 print(currentTime)
                 avgRssi = 0
                 countRssi = 0
-                while (currentTime.second <= currentTime.second + 5):
+                while (time.time() <= currentTime + 15):
                     for line in scanner.get_lines():
                         if line:
                             found_mac = line[14:][:12]
@@ -111,11 +112,19 @@ def main():
                                     #average reading
                                     #check if it is within range
                                     avgRssi+=rssi
-                                    break;
+                                    break
                 avgRssi = avgRssi/countRssi
-                if (avgRssi > zoneLimit):
+                #handles beacon leaving or entering zone
+                if ((avgRssi > zoneLimit) && zoneOne==False):
+                    zoneOne=True
                     print("Beacon", deviceId, "is in range")
                     print("RSSI :", avgRssi)
+                else if ((avgRssi < zoneLimit) && zoneOne == True):
+                    zoneOne = False
+                    print("Beacon", deviceId, "is now out of range")
+                if (countRssi == 0):
+                    zoneOne = False
+                    print("Beacon", deviceId, "cannot be found")
         except KeyboardInterrupt as ex:
             print("kbi")
             scanner.stop()
