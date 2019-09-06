@@ -112,19 +112,21 @@ def main():
                                     #average reading
                                     #check if it is within range
                                     avgRssi+=rssi
+                                    countRssi+=1
                                     break
-                avgRssi = avgRssi/countRssi
-                #handles beacon leaving or entering zone
-                if ((avgRssi > zoneLimit) && zoneOne==False):
-                    zoneOne=True
-                    print("Beacon", deviceId, "is in range")
-                    print("RSSI :", avgRssi)
-                else if ((avgRssi < zoneLimit) && zoneOne == True):
-                    zoneOne = False
-                    print("Beacon", deviceId, "is now out of range")
                 if (countRssi == 0):
                     zoneOne = False
                     print("Beacon", deviceId, "cannot be found")
+                else:
+                    avgRssi = avgRssi/countRssi
+                    #handles beacon leaving or entering zone
+                    if ((avgRssi > zoneLimit) and (zoneOne==False)):
+                        zoneOne=True
+                        print("Beacon", deviceId, "is in range")
+                        print("RSSI :", avgRssi)
+                    elif ((avgRssi < zoneLimit) and (zoneOne == True)):
+                        zoneOne = False
+                        print("Beacon", deviceId, "is now out of range")
         except KeyboardInterrupt as ex:
             print("kbi")
             scanner.stop()
