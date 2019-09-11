@@ -1,18 +1,10 @@
 """
-bluey_beacon.py
-This program connects to the bluey 1.1 Nordic nRF52 dev board 
-made by Electronut Labs. The firmware on Bluey has to be running the 
-"bluey beacon" example. 
-This code is expected to be run on a Raspverry Pi 3.
-It assumes that you have bluez installed - it uses hcidump and hcitool.
-The code reads advertisement packets from bluey, parses the 
-Temperature, Humidity, and Ambient Light informationb and 
-posts that to freeboard.io dashboard via dweet.io.
-Electronut Labs
-electronut.in
+
 References:
 1. Ruuvi Project.
 https://github.com/ttu/ruuvitag-sensor/
+2.bluey_beacon.py from electronut
+
 """
 
 import re
@@ -31,7 +23,7 @@ import arrow
 zoneLimit = -65
 
 #URL definition
-url = 'http://192.168.1.242:3000'
+url = "http://192.168.1.242:3000"
 
 #decode rssi
 def twos_comp(val, bits):
@@ -40,7 +32,7 @@ def twos_comp(val, bits):
     return val
 
 def sendToServer(payload):
-    r=requests.post(+ '/sensordata',
+    r=requests.post(url + '/beacondata',
                     headers={'Content-Type': 'application/json'},
                     json=payload)
 
@@ -86,6 +78,8 @@ class BLEScanner:
                         data += line.strip().replace(' ', '')
         except KeyboardInterrupt as ex:
             print("kbi")
+            scanner.stop()
+            exit(0)
             return
         except Exception as ex:
             print(ex)
@@ -130,7 +124,7 @@ def main():
                                     avgRssi+=rssi
                                     countRssi+=1
                                     break
-                            else if(time.time() <= currentTime + 5): #if it goes 10 seconds without finding any data break
+                            elif(time.time() >= currentTime + 5): #if it goes 10 seconds without finding any data break
                                 break;
                 if (countRssi == 0):
                     if(zoneOne==True):
