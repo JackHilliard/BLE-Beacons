@@ -14,6 +14,7 @@ import time
 import subprocess
 import requests
 import arrow
+import numpy as np
 
 # zone limit and sizes
 # -20 to -30 at beacon
@@ -89,12 +90,12 @@ class BLEScanner:
 # main() function
 def main():
     # use sys.argv if needed
-    if len(sys.argv) < 2:
-        print('Usage: python bluey-beacon.py MACADDR')
-        exit(0)
-    print('starting...')
+    #if len(sys.argv) < 2:
+    #    print('Usage: python bluey-beacon.py MACADDR')
+    #    exit(0)
+    #print('starting...')
 
-    deviceId = sys.argv[1]
+    #deviceId = sys.argv[1]
     scanner = BLEScanner()
     scanner.start()
 
@@ -105,8 +106,7 @@ def main():
             currentTime = time.time()
             if ((round(currentTime) % 10) == 0):
                 print(currentTime)
-                avgRssi = 0
-                countRssi = 0
+                avgRssi = np.zeros((2,len(beacons[0][])))
                 while (time.time() <= currentTime + 15):
                     for line in scanner.get_lines():
                         if line:
@@ -115,35 +115,37 @@ def main():
                                 reversed([found_mac[i:i + 2] for i in range(0, len(found_mac), 2)]))
                             mac = ':'.join(a+b for a,b in zip(reversed_mac[::2], reversed_mac[1::2]))
                             data = line[26:]
-                            if mac == deviceId and len(data) == 64:
-                                #print(mac, data)
-                                if u'2BAD69BB' in data:
-                                    rssi = twos_comp(int(data[62:],16), 8)
-                                    #average reading
-                                    #check if it is within range
-                                    avgRssi+=rssi
-                                    countRssi+=1
-                                    break
-                            elif(time.time() >= currentTime + 5): #if it goes 10 seconds without finding any data break
-                                break;
-                if (countRssi == 0):
-                    if(zoneOne==True):
-                        print("Beacon", deviceId, "is now out of range")
-                        sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())})
-                    zoneOne = False
-                    print("Beacon", deviceId, "cannot be found")
-                else:
-                    avgRssi = avgRssi/countRssi
-                    #handles beacon leaving or entering zone
-                    if ((avgRssi > zoneLimit) and (zoneOne==False)):
-                        zoneOne=True
-                        print("Beacon", deviceId, "is in range")
-                        print("RSSI :", avgRssi)
-                        sendToServer({'beacon': deviceId, 'zone': 'one', 'timestamp': str(arrow.utcnow())})
-                    elif ((avgRssi < zoneLimit) and (zoneOne == True)):
+                            #cycle through all the known beacons
+                            for x in len(beacons[0][]):
+                                if mac == beacons[0][x] and len(data) == 64:
+                                    #print(mac, data)
+                                    if beacons[1][x] in data:
+                                        #average reading
+                                        #check if it is within range
+                                        avgRssi[0][x]+=twos_comp(int(data[62:],16), 8)
+                                        avgRssi[1][x]+=1
+                                        break
+                                elif(time.time() >= currentTime + 5): #if it goes 10 seconds without finding any data break
+                                    break;
+                for x in len(beacons[0][]):
+                    if (avgRssi[0][x] == 0):
+                        if(zoneOne==True):
+                            print("Beacon", beacons[0][x], "is now out of range")
+                            sendToServer({'beacon': beacons[0][x], 'zone': 'none', 'timestamp': str(arrow.utcnow())})
                         zoneOne = False
-                        print("Beacon", deviceId, "is now out of range")
-                        sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())})
+                        print("Beacon", beacons[0][x], "cannot be found")
+                    else:
+                        rssi = avgRssi[0][x]/avgRssi[1][x]
+                        #handles beacon leaving or entering zone
+                        if ((rssi >= zoneLimit) and (zoneOne == False)):
+                            zoneOne=True
+                            print("Beacon", beacons[0][x], "is in range")
+                            print("RSSI :", rssi)
+                            sendToServer({'beacon': beacons[0][x], 'zone': 'one', 'timestamp': str(arrow.utcnow())})
+                        elif ((rssi < zoneLimit) and (zoneOne == True)):
+                            zoneOne = False
+                            print("Beacon", beacons[0][x], "is now out of range")
+                            sendToServer({'beacon': beacons[0][x], 'zone': 'none', 'timestamp': str(arrow.utcnow())})
         except KeyboardInterrupt as ex:
             print("kbi")
             scanner.stop()
