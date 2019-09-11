@@ -42,7 +42,7 @@ def twos_comp(val, bits):
 def sendToServer(payload):
     r=requests.post(+ '/sensordata',
                     headers={'Content-Type': 'application/json'},
-                    json={payload})
+                    json=payload)
 
     if r.status_code == 200:
         print(r.content)
