@@ -130,10 +130,12 @@ def main():
                                     avgRssi+=rssi
                                     countRssi+=1
                                     break
+                            else if(time.time() <= currentTime + 5): #if it goes 10 seconds without finding any data break
+                                break;
                 if (countRssi == 0):
                     if(zoneOne==True):
                         print("Beacon", deviceId, "is now out of range")
-                        print(sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())}))
+                        sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())})
                     zoneOne = False
                     print("Beacon", deviceId, "cannot be found")
                 else:
@@ -143,11 +145,11 @@ def main():
                         zoneOne=True
                         print("Beacon", deviceId, "is in range")
                         print("RSSI :", avgRssi)
-                        print(sendToServer({'beacon': deviceId, 'zone': 'one', 'timestamp': str(arrow.utcnow())}))
+                        sendToServer({'beacon': deviceId, 'zone': 'one', 'timestamp': str(arrow.utcnow())})
                     elif ((avgRssi < zoneLimit) and (zoneOne == True)):
                         zoneOne = False
                         print("Beacon", deviceId, "is now out of range")
-                        print(sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())}))
+                        sendToServer({'beacon': deviceId, 'zone': 'none', 'timestamp': str(arrow.utcnow())})
         except KeyboardInterrupt as ex:
             print("kbi")
             scanner.stop()
