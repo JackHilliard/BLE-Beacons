@@ -13,8 +13,8 @@ import json
 # -50 ~1m away
 # -65 ~3 metres away
 # very dependant on devices nearby and elevation compared to RPi
-zoneLimit = -65
-rpiZone = "one"
+zoneLimit = conf["rpiZone"]["limit"]
+rpiZone = conf["rpiZone"]["name"]
 #url = "hhtp://19.2.168.1.242:3000"
 
 #decode rssi
