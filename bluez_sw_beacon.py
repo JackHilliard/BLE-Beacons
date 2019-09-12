@@ -102,30 +102,30 @@ def main():
     data = None
     while True:
         try:
+            #check every 60 seconds for 15 seconds
             currentTime = time.time()
-            if ((round(currentTime) % 10) == 0):
+            if ((round(currentTime) % 60) == 0):
                 #print(currentTime)
                 for x in range(len(beacons)):
-                    beacons[x].combRssi = 0
-                while (time.time() <= currentTime + 15):
-                    for line in scanner.get_lines():
-                        if line:
-                            found_mac = line[14:][:12]
-                            reversed_mac = ''.join(
-                                reversed([found_mac[i:i + 2] for i in range(0, len(found_mac), 2)]))
-                            mac = ':'.join(a+b for a,b in zip(reversed_mac[::2], reversed_mac[1::2]))
-                            data = line[26:]
-                            #cycle through all the known beacons
-                            for x in range(len(beacons)):
-                                if mac == beacons[x].macAddr and len(data) == 64:
-                                    #print(mac, data)
-                                    if beacons[x].name in data:
-                                        #average reading
-                                        beacons[x].combRssi+=twos_comp(int(data[62:],16), 8)
-                                        beacons[x].countRssi+=1
-                                        break
-                                elif(time.time() >= currentTime + 5): #if it goes 5 seconds without finding any data timeout
+                    beacons[x].combRssi, beacons[x].countRssi, beacons[x].avgRssi = 0
+                for line in scanner.get_lines():
+                    if line:
+                        found_mac = line[14:][:12]
+                        reversed_mac = ''.join(
+                            reversed([found_mac[i:i + 2] for i in range(0, len(found_mac), 2)]))
+                        mac = ':'.join(a+b for a,b in zip(reversed_mac[::2], reversed_mac[1::2]))
+                        data = line[26:]
+                        #cycle through all the known beacons
+                        for x in range(len(beacons)):
+                            if mac == beacons[x].macAddr and len(data) == 64:
+                                #print(mac, data)
+                                if beacons[x].name in data:
+                                    #average reading
+                                    beacons[x].combRssi+=twos_comp(int(data[62:],16), 8)
+                                    beacons[x].countRssi+=1
                                     break
+                    if(time.time() >= currentTime + 15): #if it goes 15 seconds without finding any data timeout
+                        break
                 for x in range(len(beacons)):
                     if (beacons[x].countRssi == 0):
                         if(beacons[x].zone==True):
