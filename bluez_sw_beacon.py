@@ -1,10 +1,4 @@
-"""
-References:
-1. Ruuvi Project.
-https://github.com/ttu/ruuvitag-sensor/
-2.bluey_beacon.py from electronut
-"""
-
+from config import conf
 import re
 import sys
 import os
@@ -21,6 +15,7 @@ import json
 # very dependant on devices nearby and elevation compared to RPi
 zoneLimit = -65
 rpiZone = "one"
+#url = "hhtp://19.2.168.1.242:3000"
 
 #decode rssi
 def twos_comp(val, bits):
@@ -30,7 +25,7 @@ def twos_comp(val, bits):
 
 def sendToServer(payload):
     try:
-        r=requests.post(conf["url"] + '/beacondata',
+        r=requests.post(conf["api"]["url"] + '/beacondata',
                         headers={'Content-Type': 'application/json'},
                         json=payload)
 
@@ -38,10 +33,7 @@ def sendToServer(payload):
             print(r.content)
     except:
         print("Sever cannot be found!")
-        
-"""
-This class uses hctool and hcidump to parse BLE adv data.
-"""
+
 class BLEScanner:
 
     hcitool = None
@@ -101,7 +93,7 @@ def main():
     #beacons = [BLEBeacon("E9:F6:A1:2B:AD:69",u'2BAD69BB'),BLEBeacon("FC:3E:28:A4:8F:4E", u'A48F4EBA')]
     beacons = []
     for x in range(len(conf["beacons"])):
-        beacons[x] = BLEBeacon(conf["beacons"][x]["macAddr"],conf["beacons"][x]["name"])
+        beacons.append(BLEBeacon(conf["beacons"][x]["macAddr"],conf["beacons"][x]["name"]))
     data = None
     while True:
         try:
@@ -129,7 +121,7 @@ def main():
                                     beacons[x].combRssi+=twos_comp(int(data[62:],16), 8)
                                     beacons[x].countRssi+=1
                                     break
-                    if(time.time() >= currentTime + 15): #if it goes 15 seconds without finding any data timeout
+                    if(time.time() >= currentTime + 15): #if it goes 15 seconds timeout
                         break
                 for x in range(len(beacons)):
                     if (beacons[x].countRssi == 0):
