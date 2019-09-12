@@ -36,6 +36,8 @@ def sendToServer(payload):
 
         if r.status_code == 200:
             print(r.content)
+    except:
+        print("Sever cannot be found!")
         
 """
 This class uses hctool and hcidump to parse BLE adv data.
