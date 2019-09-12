@@ -1,0 +1,18 @@
+{
+  "db": "/jome/pi/sw-database/smartward.sqlite",
+  "kvs": "/home/pi/sw-config/registry.kvs",
+  "api": {
+    "url": "http://192.168.1.242:3000"
+  }
+  "scanInterval": 4,
+  "sendInterval": 20,
+  "retryInterval": 250,
+  "rpiZone": {
+    "name": "one",
+    "limit": -65
+  },
+  "beacons": [
+    { "macAddr": "E9:F6:A1:2B:AD:69", "name": "2BAD69BB" },
+    { "macAddr": "FC:3E:28:A4:8F:4E", "name": "A48F4EBA" }
+  ]
+}
