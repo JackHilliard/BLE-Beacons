@@ -3,7 +3,7 @@
   "kvs": "/home/pi/sw-config/registry.kvs",
   "api": {
     "url": "http://192.168.1.242:3000"
-  }
+  },
   "scanInterval": 4,
   "sendInterval": 20,
   "retryInterval": 250,
