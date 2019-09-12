@@ -29,12 +29,13 @@ def twos_comp(val, bits):
     return val
 
 def sendToServer(payload):
-    r=requests.post(conf["url"] + '/beacondata',
-                    headers={'Content-Type': 'application/json'},
-                    json=payload)
+    try:
+        r=requests.post(conf["url"] + '/beacondata',
+                        headers={'Content-Type': 'application/json'},
+                        json=payload)
 
-    if r.status_code == 200:
-        print(r.content)
+        if r.status_code == 200:
+            print(r.content)
         
 """
 This class uses hctool and hcidump to parse BLE adv data.
@@ -83,7 +84,7 @@ class BLEScanner:
             return
 
 class BLEBeacon:
-    def __init__(self, macAddr, name)
+    def __init__(self, macAddr, name):
         self.macAddr = macAddr
         self.name = name
         self.combRssi = 0
@@ -107,7 +108,9 @@ def main():
             if ((round(currentTime) % 60) == 0):
                 #print(currentTime)
                 for x in range(len(beacons)):
-                    beacons[x].combRssi, beacons[x].countRssi, beacons[x].avgRssi = 0
+                    beacons[x].combRssi = 0
+                    beacons[x].countRssi = 0
+                    beacons[x].avgRssi = 0
                 for line in scanner.get_lines():
                     if line:
                         found_mac = line[14:][:12]
@@ -130,7 +133,7 @@ def main():
                     if (beacons[x].countRssi == 0):
                         if(beacons[x].zone==True):
                             print("Beacon", beacons[x].macAddr, "is now out of range")
-                            sendToServer({'beacon': beacons[x].macAddr, 'zone': 'none', 'rssi': 0, 'timestamp': str(arrow.utcnow())})
+                            sendToServer({'beacon': beacons[x].macAddr, 'zone': 'none', 'rssi': null, 'timestamp': str(arrow.utcnow())})
                         else: print("Beacon", beacons[x].macAddr, "cannot be found")
                         beacons[x].zone = False
                     else:
@@ -139,12 +142,12 @@ def main():
                         if ((beacons[x].avgRssi >= zoneLimit) and (beacons[x].zone == False)):
                             beacons[x].zone=True
                             print("Beacon", beacons[x].macAddr, "is in range")
-                            print("RSSI :", beacons[x].rssi)
+                            print("RSSI :", beacons[x].avgRssi)
                             sendToServer({'beacon': beacons[x].macAddr, 'zone': rpiZone, 'rssi': beacons[x].avgRssi, 'timestamp': str(arrow.utcnow())})
                         elif ((beacons[x].avgRssi < zoneLimit) and (beacons[x].zone == True)):
                             beacons[x].zone = False
                             print("Beacon", beacons[x].macAddr, "is now out of range")
-                            sendToServer({'beacon': beacons[x].macAddr, 'zone': 'none', 'rssi': 0, 'timestamp': str(arrow.utcnow())})
+                            sendToServer({'beacon': beacons[x].macAddr, 'zone': 'none', 'rssi': null, 'timestamp': str(arrow.utcnow())})
         except KeyboardInterrupt as ex:
             print("kbi")
             scanner.stop()
