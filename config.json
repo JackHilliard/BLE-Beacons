@@ -2,7 +2,7 @@
   "db": "/jome/pi/sw-database/smartward.sqlite",
   "kvs": "/home/pi/sw-config/registry.kvs",
   "api": {
-    "url": "http://192.168.1.242:3000"
+    "url": "http://192.168.1.242:3000",
     "dirs": {
       "beacon": "/beacondata",
       "energenie": "/sensordata"
