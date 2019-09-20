@@ -3,9 +3,13 @@
   "kvs": "/home/pi/sw-config/registry.kvs",
   "api": {
     "url": "http://192.168.1.242:3000"
+    "dirs": {
+      "beacon": "/beacondata",
+      "energenie": "/sensordata"
   },
-  "scanInterval": 4,
-  "sendInterval": 20,
+  "scanInterval": 2,
+  "averageInterval": 15,
+  "sendInterval": 60,
   "retryInterval": 250,
   "rpiZone": {
     "name": "one",
